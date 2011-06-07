@@ -1,0 +1,7 @@
+kernel = "mini-os.gz"
+memory = 32
+name = "Mini-OS"
+on_crash = 'preserve'
+vif = [ '' ]
+serial='pty'
+
