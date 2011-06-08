@@ -48,6 +48,8 @@
 #ifndef _LIB_H_
 #define _LIB_H_
 
+#define HAVE_LIBC 1
+
 #include <stdarg.h>
 #include <stddef.h>
 #include <xen/xen.h>

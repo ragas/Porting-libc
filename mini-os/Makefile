@@ -62,27 +62,27 @@ links:	$(ARCH_LINKS)
 arch_lib:
 	$(MAKE) --directory=$(TARGET_ARCH_DIR) OBJ_DIR=$(OBJ_DIR)/$(TARGET_ARCH_DIR) || exit 1;
 
-ifeq ($(lwip),y)
-# lwIP library
-LWC	:= $(shell find $(LWIPDIR)/ -type f -name '*.c')
-LWC	:= $(filter-out %6.c %ip6_addr.c %ethernetif.c, $(LWC))
-LWO	:= $(patsubst %.c,%.o,$(LWC))
-LWO	+= $(addprefix $(OBJ_DIR)/,lwip-arch.o lwip-net.o)
+# ifeq ($(lwip),y)
+# # lwIP library
+# LWC	:= $(shell find $(LWIPDIR)/ -type f -name '*.c')
+# LWC	:= $(filter-out %6.c %ip6_addr.c %ethernetif.c, $(LWC))
+# LWO	:= $(patsubst %.c,%.o,$(LWC))
+# LWO	+= $(addprefix $(OBJ_DIR)/,lwip-arch.o lwip-net.o)
 
-$(OBJ_DIR)/lwip.a: $(LWO)
-	$(RM) $@
-	$(AR) cqs $@ $^
+# $(OBJ_DIR)/lwip.a: $(LWO)
+# 	$(RM) $@
+# 	$(AR) cqs $@ $^
 
-OBJS += $(OBJ_DIR)/lwip.a
-endif
+# OBJS += $(OBJ_DIR)/lwip.a
+# endif
 
-OBJS := $(filter-out $(OBJ_DIR)/lwip%.o $(LWO), $(OBJS))
+# OBJS := $(filter-out $(OBJ_DIR)/lwip%.o $(LWO), $(OBJS))
 
 ifeq ($(libc),y)
-APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libxc-$(XEN_TARGET_ARCH) -whole-archive -lxenguest -lxenctrl -no-whole-archive
-APP_LDLIBS += -lpci
-APP_LDLIBS += -lz
-APP_LDLIBS += -lm
+#APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libxc-$(XEN_TARGET_ARCH) -whole-archive -lxenguest -lxenctrl -no-whole-archive
+#APP_LDLIBS += -lpci
+#APP_LDLIBS += -lz
+#APP_LDLIBS += -lm
 LDLIBS += -lc
 endif
 

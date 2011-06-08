@@ -12,6 +12,8 @@
 //#define LIBC_VERBOSE
 //#define LIBC_DEBUG
 
+#define HAVE_LIBC 1
+
 #ifdef LIBC_DEBUG
 #define DEBUG(fmt,...) printk(fmt, ##__VA_ARGS__)
 #else

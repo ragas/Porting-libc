@@ -4,9 +4,9 @@
 #include <mini-os/list.h>
 #include <mini-os/time.h>
 #include <mini-os/arch_sched.h>
-#ifdef HAVE_LIBC
-#include <sys/reent.h>
-#endif
+/* #ifdef HAVE_LIBC */
+/* #include <sys/reent.h> */
+/* #endif */
 
 struct thread
 {

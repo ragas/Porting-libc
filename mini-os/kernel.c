@@ -48,6 +48,7 @@
 
 static struct netfront_dev *net_dev;
 
+
 uint8_t xen_features[XENFEAT_NR_SUBMAPS * 32];
 
 void setup_xen_features(void)
@@ -526,6 +527,7 @@ void start_kernel(start_info_t *si)
 
     /* Call (possibly overridden) app_main() */
     app_main(&start_info);
+
 
     /* Everything initialised, start idle thread */
     run_idle_thread();
