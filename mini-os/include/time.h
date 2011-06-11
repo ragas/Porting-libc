@@ -48,7 +48,7 @@ typedef int64_t s_time_t;
 
 #include <sys/time.h>
 
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC || defined BSD_LIBC
 #include_next <time.h>
 #endif
 

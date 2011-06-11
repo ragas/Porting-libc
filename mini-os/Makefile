@@ -17,7 +17,9 @@ include minios.mk
 
 # Set tester flags
 # CFLAGS += -DBLKTEST_WRITE
+ifeq ($(bsdlibc),y)
 CFLAGS += -nostdinc
+endif
 #do not use standard includes
 
 # Define some default flags for linking.

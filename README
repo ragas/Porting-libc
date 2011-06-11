@@ -1,1 +1,3 @@
-BSD Libc
+Impementation of BSD C library.
+To make, in folder mini-os
+$ make bsdlibc=y

@@ -20,7 +20,7 @@
 #ifndef _MINIOS_SYS_TIME_H_
 #define _MINIOS_SYS_TIME_H_
 
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC || defined BSD_LIBC
 #include_next <sys/time.h>
 #else
 struct timespec {
