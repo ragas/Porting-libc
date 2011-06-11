@@ -18,7 +18,7 @@
 #define DEBUG(fmt,...)
 #endif
 
-#if defined HAVE_LIBC 
+#ifdef HAVE_LIBC
 #include <os.h>
 #include <console.h>
 #include <sched.h>
@@ -30,22 +30,20 @@
 #include <xenbus.h>
 #include <xs.h>
 
-
 #include <sys/types.h>
 #include <sys/unistd.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
-/* #include <net/if.h> */
+#include <net/if.h>
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
-/* #include <pthread.h> */
+#include <pthread.h>
 #include <assert.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <math.h>
 
-int close(int);
 #ifdef HAVE_LWIP
 #include <lwip/sockets.h>
 #endif
@@ -84,13 +82,11 @@ int close(int);
     }
 
 #define NOFILE 32
-
-extern int errno;
 extern void minios_interface_close_fd(int fd);
 extern void minios_evtchn_close_fd(int fd);
 extern void minios_gnttab_close_fd(int fd);
 
-/* pthread_mutex_t fd_lock = PTHREAD_MUTEX_INITIALIZER; */
+pthread_mutex_t fd_lock = PTHREAD_MUTEX_INITIALIZER;
 struct file files[NOFILE] = {
     { .type = FTYPE_CONSOLE }, /* stdin */
     { .type = FTYPE_CONSOLE }, /* stdout */
@@ -102,15 +98,15 @@ DECLARE_WAIT_QUEUE_HEAD(event_queue);
 int alloc_fd(enum fd_type type)
 {
     int i;
-    /* pthread_mutex_lock(&fd_lock); */
+    pthread_mutex_lock(&fd_lock);
     for (i=0; i<NOFILE; i++) {
 	if (files[i].type == FTYPE_NONE) {
 	    files[i].type = type;
-	    /* pthread_mutex_unlock(&fd_lock); */
+	    pthread_mutex_unlock(&fd_lock);
 	    return i;
 	}
     }
-    /* pthread_mutex_unlock(&fd_lock); */
+    pthread_mutex_unlock(&fd_lock);
     printk("Too many opened files\n");
     do_exit();
 }
@@ -118,21 +114,21 @@ int alloc_fd(enum fd_type type)
 void close_all_files(void)
 {
     int i;
-    /* pthread_mutex_lock(&fd_lock); */
+    pthread_mutex_lock(&fd_lock);
     for (i=NOFILE - 1; i > 0; i--)
 	if (files[i].type != FTYPE_NONE)
             close(i);
-    /* pthread_mutex_unlock(&fd_lock); */
+    pthread_mutex_unlock(&fd_lock);
 }
 
 int dup2(int oldfd, int newfd)
 {
-    /* pthread_mutex_lock(&fd_lock); */
+    pthread_mutex_lock(&fd_lock);
     if (files[newfd].type != FTYPE_NONE)
 	close(newfd);
     // XXX: this is a bit bogus, as we are supposed to share the offset etc
     files[newfd] = files[oldfd];
-    /* pthread_mutex_unlock(&fd_lock); */
+    pthread_mutex_unlock(&fd_lock);
     return 0;
 }
 
@@ -247,7 +243,7 @@ int read(int fd, void *buf, size_t nbytes)
 #endif
 	case FTYPE_TAP: {
 	    ssize_t ret;
-	    ret = 0;//netfront_receive(files[fd].tap.dev, buf, nbytes);
+	    ret = netfront_receive(files[fd].tap.dev, buf, nbytes);
 	    if (ret <= 0) {
 		errno = EAGAIN;
 		return -1;
@@ -413,7 +409,7 @@ int fstat(int fd, struct stat *buf)
 	    buf->st_size = 0;
 	    buf->st_atime = 
 	    buf->st_mtime = 
-	      buf->st_ctime = 0;//time(NULL); 
+	    buf->st_ctime = time(NULL);
 	    return 0;
 	}
 	default:
@@ -472,34 +468,34 @@ int fcntl(int fd, int cmd, ...)
     }
 }
 
-/* DIR *opendir(const char *name) */
-/* { */
-/*     DIR *ret; */
-/*     ret = malloc(sizeof(*ret)); */
-/*     ret->name = strdup(name); */
-/*     ret->offset = 0; */
-/*     ret->entries = NULL; */
-/*     ret->curentry = -1; */
-/*     ret->nbentries = 0; */
-/*     ret->has_more = 1; */
-/*     return ret; */
-/* } */
+DIR *opendir(const char *name)
+{
+    DIR *ret;
+    ret = malloc(sizeof(*ret));
+    ret->name = strdup(name);
+    ret->offset = 0;
+    ret->entries = NULL;
+    ret->curentry = -1;
+    ret->nbentries = 0;
+    ret->has_more = 1;
+    return ret;
+}
 
 struct dirent *readdir(DIR *dir)
 {
     return NULL;
 } 
 
-/* int closedir(DIR *dir) */
-/* { */
-/*     int i; */
-/*     for (i=0; i<dir->nbentries; i++) */
-/*         free(dir->entries[i]); */
-/*     free(dir->entries); */
-/*     free(dir->name); */
-/*     free(dir); */
-/*     return 0; */
-/* } */
+int closedir(DIR *dir)
+{
+    int i;
+    for (i=0; i<dir->nbentries; i++)
+        free(dir->entries[i]);
+    free(dir->entries);
+    free(dir->name);
+    free(dir);
+    return 0;
+}
 
 /* We assume that only the main thread calls select(). */
 
@@ -1024,37 +1020,37 @@ unsigned int sleep(unsigned int seconds)
     return rem.tv_sec;
 }
 
-/* int clock_gettime(clockid_t clk_id, struct timespec *tp) */
-/* { */
-/*     switch (clk_id) { */
-/* 	case CLOCK_MONOTONIC: */
-/* 	{ */
-/* 	    struct timeval tv; */
+int clock_gettime(clockid_t clk_id, struct timespec *tp)
+{
+    switch (clk_id) {
+	case CLOCK_MONOTONIC:
+	{
+	    struct timeval tv;
 
-/* 	    gettimeofday(&tv, NULL); */
+	    gettimeofday(&tv, NULL);
 
-/* 	    tp->tv_sec = tv.tv_sec; */
-/* 	    tp->tv_nsec = tv.tv_usec * 1000; */
+	    tp->tv_sec = tv.tv_sec;
+	    tp->tv_nsec = tv.tv_usec * 1000;
 
-/* 	    break; */
-/* 	} */
-/* 	case CLOCK_REALTIME: */
-/* 	{ */
-/* 	    uint64_t nsec = monotonic_clock(); */
+	    break;
+	}
+	case CLOCK_REALTIME:
+	{
+	    uint64_t nsec = monotonic_clock();
 
-/* 	    tp->tv_sec = nsec / 1000000000ULL; */
-/* 	    tp->tv_nsec = nsec % 1000000000ULL; */
+	    tp->tv_sec = nsec / 1000000000ULL;
+	    tp->tv_nsec = nsec % 1000000000ULL;
 
-/* 	    break; */
-/* 	} */
-/* 	default: */
-/* 	    print_unsupported("clock_gettime(%d)", clk_id); */
-/* 	    errno = EINVAL; */
-/* 	    return -1; */
-/*     } */
+	    break;
+	}
+	default:
+	    print_unsupported("clock_gettime(%d)", clk_id);
+	    errno = EINVAL;
+	    return -1;
+    }
 
-/*     return 0; */
-/* } */
+    return 0;
+}
 
 uid_t getuid(void)
 {

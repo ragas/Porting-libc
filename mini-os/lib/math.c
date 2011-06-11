@@ -45,7 +45,7 @@
  * SUCH DAMAGE.
  *
 */
-
+#include <sys/types.h>
 #include <mini-os/types.h>
 #include <mini-os/lib.h>
 #include <mini-os/time.h>
@@ -86,7 +86,7 @@ union uu {
  * and assembly.
  */
 #ifndef HAVE_LIBC
-#define CHAR_BIT        8               /* number of bits in a char */
+//#define CHAR_BIT        8               /* number of bits in a char */
 #endif
 #define	QUAD_BITS	(sizeof(quad_t) * CHAR_BIT)
 #define	LONG_BITS	(sizeof(int32_t) * CHAR_BIT)

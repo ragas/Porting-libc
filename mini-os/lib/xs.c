@@ -6,9 +6,9 @@
  * Mere wrapper around xenbus_*
  */
 
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC || defined BSD_LIBC
 #include <os.h>
-#include <lib.h>
+#include <syscalls.h>
 #include <xs.h>
 #include <xenbus.h>
 #include <stdlib.h>
