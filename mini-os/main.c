@@ -3,17 +3,13 @@
  *
  * Samuel Thibault <Samuel.Thibault@eu.citrix.net>, October 2007
  */
-
-extern void printk(const char *fmt, ...);
-int call_main(void) {
-  printk("HELLO WORLD");
-  return 0;
-
+#include <console.h>
+#include <stdio.h>
+void my_main(void)
+{
+  printf("Test Print");
 }
-
-
 #ifdef HAVE_LIBC
-//#if 1
 #include <os.h>
 #include <sched.h>
 #include <console.h>

@@ -1,6 +1,8 @@
 #include<unistd.h>
 
+
 #include<sys/stat.h> /* for fstat etc functions*/
+
 
 void _exit(int status)
 {
@@ -45,13 +47,13 @@ int	mprotect(void *addr, size_t len, int port)
   return -1;
 }
 
-int	munmap(void *addr, size_t len)
+int munmap(void *addr, size_t len)
 {
 
   return -1;
 }
 
-int	 isatty(int fd)
+int isatty(int fd)
 {
   return -1;
 }
@@ -61,7 +63,7 @@ int fstat(int fd, struct stat *buf)
   return -1;
 }
 
-int	 getpagesize(void)
+int getpagesize(void)
 {
   return -1;
 }
@@ -71,3 +73,26 @@ void abort(void)
 
 }
 
+
+
+void *mmap(void *start, size_t length, int prot, int flags, int fd, off_t offset)
+{
+  return NULL;
+}
+
+long sysconf(int name)
+{
+  
+  return -1;
+}
+
+void *realloc(void *ptr, size_t size)
+{
+
+  return NULL;
+}
+
+void free(void *ptr)
+{
+
+}

@@ -55,7 +55,7 @@ int ffsll (long long int lli)
     return __ffsti2 (lli);
 }
 
-#if !defined HAVE_LIBC
+#if !defined HAVE_LIBC || !defined BSD_LIBC
 
 #include <mini-os/os.h>
 #include <mini-os/types.h>

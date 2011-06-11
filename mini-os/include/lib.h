@@ -48,21 +48,19 @@
 #ifndef _LIB_H_
 #define _LIB_H_
 
-#define HAVE_LIBC 1
-
 #include <stdarg.h>
 #include <stddef.h>
 #include <xen/xen.h>
 #include <xen/event_channel.h>
 #include "gntmap.h"
 
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC || defined BSD_LIBC
 #include <stdio.h>
 #else
 #include <lib-gpl.h>
 #endif
 
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC || defined BSD_LIBC
 #include <string.h>
 #else
 /* string and memory manipulation */
@@ -72,33 +70,33 @@
  *	@(#)libkern.h	8.1 (Berkeley) 6/10/93
  * $FreeBSD$
  */
-int	 memcmp(const void *b1, const void *b2, size_t len);
+/* int	 memcmp(const void *b1, const void *b2, size_t len); */
 
-char	*strcat(char * __restrict, const char * __restrict);
-int	 strcmp(const char *, const char *);
-char	*strcpy(char * __restrict, const char * __restrict);
+/* char	*strcat(char * __restrict, const char * __restrict); */
+/* int	 strcmp(const char *, const char *); */
+/* char	*strcpy(char * __restrict, const char * __restrict); */
 
-char	*strdup(const char *__restrict);
+/* char	*strdup(const char *__restrict); */
 
-size_t	 strlen(const char *);
+/* size_t	 strlen(const char *); */
 
-int	 strncmp(const char *, const char *, size_t);
-char	*strncpy(char * __restrict, const char * __restrict, size_t);
+/* int	 strncmp(const char *, const char *, size_t); */
+/* char	*strncpy(char * __restrict, const char * __restrict, size_t); */
 
-char	*strstr(const char *, const char *);
+/* char	*strstr(const char *, const char *); */
 
-void *memset(void *, int, size_t);
+/* void *memset(void *, int, size_t); */
 
-char *strchr(const char *p, int ch);
-char *strrchr(const char *p, int ch);
+/* char *strchr(const char *p, int ch); */
+/* char *strrchr(const char *p, int ch); */
 
-/* From:
- *	@(#)systm.h	8.7 (Berkeley) 3/29/95
- * $FreeBSD$
- */
-void	*memcpy(void *to, const void *from, size_t len);
+/* /\* From: */
+/*  *	@(#)systm.h	8.7 (Berkeley) 3/29/95 */
+/*  * $FreeBSD$ */
+/*  *\/ */
+/* void	*memcpy(void *to, const void *from, size_t len); */
 
-size_t strnlen(const char *, size_t);
+/* size_t strnlen(const char *, size_t); */
 #endif
 
 #include <mini-os/console.h>
@@ -127,7 +125,7 @@ do {                                                           \
 /* Consistency check as much as possible. */
 void sanity_check(void);
 
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC || defined BSD_LIBC
 enum fd_type {
     FTYPE_NONE = 0,
     FTYPE_CONSOLE,

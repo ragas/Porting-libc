@@ -43,6 +43,14 @@ extra_incl := $(foreach dir,$(EXTRA_INC),-isystem $(MINI-OS_ROOT)/include/$(dir)
 DEF_CPPFLAGS += -isystem $(MINI-OS_ROOT)/include
 DEF_CPPFLAGS += -D__MINIOS__
 
+ifeq ($(bsdlibc),y)
+DEF_CPPFLAGS += -DBSD_LIBC
+DEF_CPPFLAGS += -isystem $(XEN_ROOT)/include
+DEF_CPPFLAGS += -isystem $(XEN_ROOT)/libc/include
+DEF_CPPFLAGS += -isystem $(XEN_ROOT)/libc/include/sys
+DEF_CPPFLAGS += -isystem $(XEN_ROOT)/libc/arch/amd64
+
+endif
 ifeq ($(libc),y)
 DEF_CPPFLAGS += -DHAVE_LIBC
 DEF_CPPFLAGS += -isystem $(MINI-OS_ROOT)/include/posix

@@ -46,8 +46,9 @@
 #include <xen/features.h>
 #include <xen/version.h>
 
-static struct netfront_dev *net_dev;
+extern int my_main(void);
 
+//static struct netfront_dev *net_dev;
 
 uint8_t xen_features[XENFEAT_NR_SUBMAPS * 32];
 
@@ -69,11 +70,13 @@ void setup_xen_features(void)
 
 void test_xenbus(void);
 
+#if 0
 static void xenbus_tester(void *p)
 {
     printk("Xenbus tests disabled, because of a Xend bug.\n");
     /* test_xenbus(); */
 }
+
 
 static void periodic_thread(void *p)
 {
@@ -86,6 +89,7 @@ static void periodic_thread(void *p)
         msleep(1000);
     }
 }
+
 
 static void netfront_thread(void *p)
 {
@@ -204,6 +208,7 @@ static void blk_write_sector(uint64_t sector)
 }
 #endif
 
+
 static void blkfront_thread(void *p)
 {
     time_t lasttime = 0;
@@ -256,6 +261,9 @@ static void blkfront_thread(void *p)
 #endif
     }
 }
+
+
+
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -456,17 +464,19 @@ static void pcifront_thread(void *p)
     pcifront_scan(pci_dev, print_pcidev);
 }
 
+#endif // 0
 /* This should be overridden by the application we are linked against. */
-__attribute__((weak)) int app_main(start_info_t *si)
+
+__attribute__((weak)) int app_main(start_info_t *si) 
 {
-    printk("Dummy main: start_info=%p\n", si);
-    create_thread("xenbus_tester", xenbus_tester, si);
-    create_thread("periodic_thread", periodic_thread, si);
-    create_thread("netfront", netfront_thread, si);
-    create_thread("blkfront", blkfront_thread, si);
-    create_thread("fbfront", fbfront_thread, si);
-    create_thread("kbdfront", kbdfront_thread, si);
-    create_thread("pcifront", pcifront_thread, si);
+/*     printk("Dummy main: start_info=%p\n", si); */
+/*     create_thread("xenbus_tester", xenbus_tester, si); */
+/*     create_thread("periodic_thread", periodic_thread, si); */
+/*     create_thread("netfront", netfront_thread, si); */
+/*     create_thread("blkfront", blkfront_thread, si); */
+/*     create_thread("fbfront", fbfront_thread, si); */
+/*     create_thread("kbdfront", kbdfront_thread, si); */
+/*     create_thread("pcifront", pcifront_thread, si); */
     return 0;
 }
 
@@ -528,13 +538,17 @@ void start_kernel(start_info_t *si)
     /* Call (possibly overridden) app_main() */
     app_main(&start_info);
 
-
     /* Everything initialised, start idle thread */
+
+    
+    my_main();
     run_idle_thread();
+    
 }
 
 void stop_kernel(void)
 {
+#if 0
     if (net_dev)
         shutdown_netfront(net_dev);
 
@@ -549,6 +563,7 @@ void stop_kernel(void)
 
     if (pci_dev)
         shutdown_pcifront(pci_dev);
+#endif
 
     /* TODO: fs import */
 
