@@ -4,7 +4,8 @@
 #include <mini-os/hypervisor.h>
 #include <mini-os/events.h>
 #include <mini-os/os.h>
-#include <mini-os/lib.h>
+/* #include <mini-os/lib.h> */
+#include <mini-os/syscalls.h>
 #include <mini-os/xenbus.h>
 #include <xen/io/console.h>
 #include <xen/io/protocols.h>
@@ -68,7 +69,7 @@ int xencons_ring_send(struct consfront_dev *dev, const char *data, unsigned len)
 static void handle_input(evtchn_port_t port, struct pt_regs *regs, void *data)
 {
 	struct consfront_dev *dev = (struct consfront_dev *) data;
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC || defined BSD_LIBC
         int fd = dev ? dev->fd : -1;
 
         if (fd != -1)
@@ -98,7 +99,7 @@ static void handle_input(evtchn_port_t port, struct pt_regs *regs, void *data)
 #endif
 }
 
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC || defined BSD_LIBC
 int xencons_ring_avail(struct consfront_dev *dev)
 {
 	struct xencons_interface *intf;
@@ -119,7 +120,8 @@ int xencons_ring_avail(struct consfront_dev *dev)
 
 int xencons_ring_recv(struct consfront_dev *dev, char *data, unsigned len)
 {
-	struct xencons_interface *intf;
+
+  struct xencons_interface *intf;
 	XENCONS_RING_IDX cons, prod;
         unsigned filled = 0;
 
@@ -162,7 +164,7 @@ struct consfront_dev *xencons_ring_init(void)
 	dev->backend = 0;
 	dev->ring_ref = 0;
 
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC || defined BSD_LIBC
 	dev->fd = -1;
 #endif
 	dev->evtchn = start_info.console.domU.evtchn;
@@ -248,7 +250,7 @@ struct consfront_dev *init_consfront(char *_nodename)
     dev = malloc(sizeof(*dev));
     memset(dev, 0, sizeof(*dev));
     dev->nodename = strdup(nodename);
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC || defined BSD_LIBC
     dev->fd = -1;
 #endif
 

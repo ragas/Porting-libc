@@ -89,7 +89,7 @@ void schedule(void)
         printk("Must not call schedule() with IRQs disabled\n");
         BUG();
     }
-
+    
     do {
         /* Examine all threads.
            Find a runnable thread, but also wake up expired ones and find the
@@ -98,6 +98,7 @@ void schedule(void)
         s_time_t min_wakeup_time = now + SECONDS(10);
         next = NULL;   
         minios_list_for_each_safe(iterator, next_iterator, &idle_thread->thread_list)
+
         {
             thread = minios_list_entry(iterator, struct thread, thread_list);
             if (!is_runnable(thread) && thread->wakeup_time != 0LL)
@@ -123,7 +124,9 @@ void schedule(void)
         /* handle pending events if any */
         force_evtchn_callback();
     } while(1);
+
     local_irq_restore(flags);
+
     /* Interrupting the switch is equivalent to having the next thread
        inturrupted at the return instruction. And therefore at safe point. */
     if(prev != next) switch_threads(prev, next);

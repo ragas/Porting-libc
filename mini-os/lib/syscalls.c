@@ -1,5 +1,7 @@
 #include <os.h>
 #include <syscalls.h>
+#include <wait.h>
+
 #include <sys/types.h>
 #include <sys/unistd.h>
 #include <sys/stat.h>
@@ -29,13 +31,51 @@ void _exit(int status)
 
 ssize_t	 read(int fd , void *buf, size_t count)
 {
-  printk("read");
+  printk("syscall_read\n");
+    switch (files[fd].type) {
+
+	case FTYPE_CONSOLE: {
+
+	    int ret;
+            DEFINE_WAIT(w);
+
+            while(1) {
+
+                add_waiter(w, console_queue);
+		printk("HERE");
+                ret = xencons_ring_recv(files[fd].cons.dev, buf, count);
+
+                if (ret)
+                    break;
+
+                schedule();
+		
+            }
+            remove_waiter(w);
+            return ret;
+        }
+        /* case FTYPE_KBD: { */
+        /*     int ret, n; */
+        /*     n = count / sizeof(union xenkbd_in_event); */
+        /*     ret = kbdfront_receive(files[fd].kbd.dev, buf, n); */
+	/*     if (ret <= 0) { */
+	/* 	/\* errno = EAGAIN; *\/ */
+	/* 	return -1; */
+	/*     } */
+	/*     return ret * sizeof(union xenkbd_in_event); */
+        /* } */
+	default:
+	    break;
+    }
+    printk("read(%d): Bad descriptor\n", fd);
+
+
   return -1;
 }
 
 ssize_t	 write(int fd, const void *buf, size_t count)
 {
-  /* printk("syscall_write"); */
+  printk("syscall_write");
 
     switch (files[fd].type) {
 	case FTYPE_CONSOLE:
@@ -72,9 +112,11 @@ void *malloc(size_t size)
 
 int mprotect(void *addr, size_t len, int port)
 {
-  /* printk("syscall_mprotect"); */
+  printk("syscall_mprotect");
   return 0; //Always success
 }
+
+
 
 int munmap(void *addr, size_t len)
 {
@@ -103,7 +145,7 @@ static void init_stat(struct stat *buf)
 
 int fstat(int fd, struct stat *buf)
 {
-  /* printk("syscall_fstat"); */
+  printk("syscall_fstat");
     init_stat(buf);
     switch (files[fd].type) {
 	/* case FTYPE_SAVEFILE: */
@@ -171,7 +213,7 @@ int alloc_fd(enum fd_type type)
 
 void *mmap(void *start, size_t length, int prot, int flags, int fd, off_t offset)
 {
-  /* printk("syscall_*mmap"); */
+  printk("syscall_*mmap");
   unsigned long n = (length + PAGE_SIZE - 1) / PAGE_SIZE;
   
   ASSERT(!start);

@@ -374,7 +374,7 @@ int free_physical_pages(xen_pfn_t *mfns, int n)
 }
 #endif
 
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC 
 void *sbrk(ptrdiff_t increment)
 {
     unsigned long old_brk = brk;

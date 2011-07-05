@@ -48,153 +48,157 @@
 #ifndef _LIB_H_
 #define _LIB_H_
 
-#include <stdarg.h>
-#include <stddef.h>
-#include <xen/xen.h>
-#include <xen/event_channel.h>
-#include "gntmap.h"
+#include <syscalls.h>
 
-#ifdef HAVE_LIBC
-#include <stdio.h>
-#else
-#include <lib-gpl.h>
-#endif
 
-#ifdef HAVE_LIBC
-#include <string.h>
-#else
-/* string and memory manipulation */
+/* #include <stdarg.h> */
+/* #include <stddef.h> */
+/* #include <xen/xen.h> */
+/* #include <xen/event_channel.h> */
+/* #include "gntmap.h" */
 
-/*
- * From:
- *	@(#)libkern.h	8.1 (Berkeley) 6/10/93
- * $FreeBSD$
- */
-int	 memcmp(const void *b1, const void *b2, size_t len);
+/* #ifdef HAVE_LIBC */
+/* #include <stdio.h> */
+/* #else */
+/* #include <lib-gpl.h> */
+/* #endif */
 
-char	*strcat(char * __restrict, const char * __restrict);
-int	 strcmp(const char *, const char *);
-char	*strcpy(char * __restrict, const char * __restrict);
+/* #ifdef HAVE_LIBC */
+/* #include <string.h> */
+/* #else */
+/* /\* string and memory manipulation *\/ */
 
-char	*strdup(const char *__restrict);
+/* /\* */
+/*  * From: */
+/*  *	@(#)libkern.h	8.1 (Berkeley) 6/10/93 */
+/*  * $FreeBSD$ */
+/*  *\/ */
+/* int	 memcmp(const void *b1, const void *b2, size_t len); */
 
-size_t	 strlen(const char *);
+/* char	*strcat(char * __restrict, const char * __restrict); */
+/* int	 strcmp(const char *, const char *); */
+/* char	*strcpy(char * __restrict, const char * __restrict); */
 
-int	 strncmp(const char *, const char *, size_t);
-char	*strncpy(char * __restrict, const char * __restrict, size_t);
+/* char	*strdup(const char *__restrict); */
 
-char	*strstr(const char *, const char *);
+/* size_t	 strlen(const char *); */
 
-void *memset(void *, int, size_t);
+/* int	 strncmp(const char *, const char *, size_t); */
+/* char	*strncpy(char * __restrict, const char * __restrict, size_t); */
 
-char *strchr(const char *p, int ch);
-char *strrchr(const char *p, int ch);
+/* char	*strstr(const char *, const char *); */
 
-/* From:
- *	@(#)systm.h	8.7 (Berkeley) 3/29/95
- * $FreeBSD$
- */
-void	*memcpy(void *to, const void *from, size_t len);
+/* void *memset(void *, int, size_t); */
 
-size_t strnlen(const char *, size_t);
-#endif
+/* char *strchr(const char *p, int ch); */
+/* char *strrchr(const char *p, int ch); */
 
-#include <mini-os/console.h>
+/* /\* From: */
+/*  *	@(#)systm.h	8.7 (Berkeley) 3/29/95 */
+/*  * $FreeBSD$ */
+/*  *\/ */
+/* void	*memcpy(void *to, const void *from, size_t len); */
 
-#define RAND_MIX 2654435769U
+/* size_t strnlen(const char *, size_t); */
+/* #endif */
 
-int rand(void);
+/* #include <mini-os/console.h> */
 
-#include <mini-os/xenbus.h>
+/* #define RAND_MIX 2654435769U */
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+/* int rand(void); */
 
-#define ASSERT(x)                                              \
-do {                                                           \
-	if (!(x)) {                                                \
-		printk("ASSERTION FAILED: %s at %s:%d.\n",             \
-			   # x ,                                           \
-			   __FILE__,                                       \
-			   __LINE__);                                      \
-        BUG();                                                 \
-	}                                                          \
-} while(0)
+/* #include <mini-os/xenbus.h> */
 
-#define BUG_ON(x) ASSERT(!(x))
+/* #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0])) */
 
-/* Consistency check as much as possible. */
-void sanity_check(void);
+/* #define ASSERT(x)                                              \ */
+/* do {                                                           \ */
+/* 	if (!(x)) {                                                \ */
+/* 		printk("ASSERTION FAILED: %s at %s:%d.\n",             \ */
+/* 			   # x ,                                           \ */
+/* 			   __FILE__,                                       \ */
+/* 			   __LINE__);                                      \ */
+/*         BUG();                                                 \ */
+/* 	}                                                          \ */
+/* } while(0) */
 
-#ifdef HAVE_LIBC
-enum fd_type {
-    FTYPE_NONE = 0,
-    FTYPE_CONSOLE,
-    FTYPE_FILE,
-    FTYPE_XENBUS,
-    FTYPE_XC,
-    FTYPE_EVTCHN,
-    FTYPE_GNTMAP,
-    FTYPE_SOCKET,
-    FTYPE_TAP,
-    FTYPE_BLK,
-    FTYPE_KBD,
-    FTYPE_FB,
-    FTYPE_MEM,
-    FTYPE_SAVEFILE,
-};
+/* #define BUG_ON(x) ASSERT(!(x)) */
 
-#define MAX_EVTCHN_PORTS 16
+/* /\* Consistency check as much as possible. *\/ */
+/* void sanity_check(void); */
 
-extern struct file {
-    enum fd_type type;
-    union {
-	struct {
-            /* lwIP fd */
-	    int fd;
-	} socket;
-	struct {
-            /* FS import fd */
-	    int fd;
-	    off_t offset;
-	} file;
-	struct {
-            /* To each event channel FD is associated a series of ports which
-             * wakes select for this FD. */
-            struct {
-                evtchn_port_t port;
-                unsigned long pending;
-                int bound;
-            } ports[MAX_EVTCHN_PORTS];
-	} evtchn;
-	struct gntmap gntmap;
-	struct {
-	    struct netfront_dev *dev;
-	} tap;
-	struct {
-	    struct blkfront_dev *dev;
-	} blk;
-	struct {
-	    struct kbdfront_dev *dev;
-	} kbd;
-	struct {
-	    struct fbfront_dev *dev;
-	} fb;
-	struct {
-	    struct consfront_dev *dev;
-	} cons;
-        struct {
-            /* To each xenbus FD is associated a queue of watch events for this
-             * FD.  */
-            xenbus_event_queue events;
-        } xenbus;
-    };
-    int read;	/* maybe available for read */
-} files[];
+/* #ifdef HAVE_LIBC */
+/* enum fd_type { */
+/*     FTYPE_NONE = 0, */
+/*     FTYPE_CONSOLE, */
+/*     FTYPE_FILE, */
+/*     FTYPE_XENBUS, */
+/*     FTYPE_XC, */
+/*     FTYPE_EVTCHN, */
+/*     FTYPE_GNTMAP, */
+/*     FTYPE_SOCKET, */
+/*     FTYPE_TAP, */
+/*     FTYPE_BLK, */
+/*     FTYPE_KBD, */
+/*     FTYPE_FB, */
+/*     FTYPE_MEM, */
+/*     FTYPE_SAVEFILE, */
+/* }; */
 
-int alloc_fd(enum fd_type type);
-void close_all_files(void);
-extern struct thread *main_thread;
-void sparse(unsigned long data, size_t size);
-#endif
+/* #define MAX_EVTCHN_PORTS 16 */
+
+/* extern struct file { */
+/*     enum fd_type type; */
+/*     union { */
+/* 	struct { */
+/*             /\* lwIP fd *\/ */
+/* 	    int fd; */
+/* 	} socket; */
+/* 	struct { */
+/*             /\* FS import fd *\/ */
+/* 	    int fd; */
+/* 	    off_t offset; */
+/* 	} file; */
+/* 	struct { */
+/*             /\* To each event channel FD is associated a series of ports which */
+/*              * wakes select for this FD. *\/ */
+/*             struct { */
+/*                 evtchn_port_t port; */
+/*                 unsigned long pending; */
+/*                 int bound; */
+/*             } ports[MAX_EVTCHN_PORTS]; */
+/* 	} evtchn; */
+/* 	struct gntmap gntmap; */
+/* 	struct { */
+/* 	    struct netfront_dev *dev; */
+/* 	} tap; */
+/* 	struct { */
+/* 	    struct blkfront_dev *dev; */
+/* 	} blk; */
+/* 	struct { */
+/* 	    struct kbdfront_dev *dev; */
+/* 	} kbd; */
+/* 	struct { */
+/* 	    struct fbfront_dev *dev; */
+/* 	} fb; */
+/* 	struct { */
+/* 	    struct consfront_dev *dev; */
+/* 	} cons; */
+/*         struct { */
+/*             /\* To each xenbus FD is associated a queue of watch events for this */
+/*              * FD.  *\/ */
+/*             xenbus_event_queue events; */
+/*         } xenbus; */
+/*     }; */
+/*     int read;	/\* maybe available for read *\/ */
+/* } files[]; */
+
+/* int alloc_fd(enum fd_type type); */
+/* void close_all_files(void); */
+/* extern struct thread *main_thread; */
+/* void sparse(unsigned long data, size_t size); */
+/* #endif */
 
 #endif /* _LIB_H_ */
+

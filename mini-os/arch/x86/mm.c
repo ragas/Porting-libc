@@ -499,7 +499,7 @@ static unsigned long demand_map_area_start;
 #define DEMAND_MAP_PAGES ((2ULL << 30) / PAGE_SIZE)
 #endif
 
-#ifndef HAVE_LIBC
+#if !defined(HAVE_LIBC) && !defined(BSD_LIBC)
 #define HEAP_PAGES 0
 #else
 unsigned long heap, brk, heap_mapped, heap_end;
@@ -519,7 +519,7 @@ void arch_init_demand_mapping_area(unsigned long cur_pfn)
     printk("Demand map pfns at %lx-%lx.\n", 
            demand_map_area_start, pfn_to_virt(cur_pfn));
 
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC || defined BSD_LIBC
     cur_pfn++;
     heap_mapped = brk = heap = (unsigned long) pfn_to_virt(cur_pfn);
     cur_pfn += HEAP_PAGES;

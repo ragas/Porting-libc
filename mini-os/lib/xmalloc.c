@@ -43,7 +43,8 @@
 #include <mini-os/list.h>
 #include <mini-os/xmalloc.h>
 
-#ifndef HAVE_LIBC
+
+#if !defined(HAVE_LIBC) 
 static MINIOS_LIST_HEAD(freelist);
 /* static spinlock_t freelist_lock = SPIN_LOCK_UNLOCKED; */
 

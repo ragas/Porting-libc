@@ -1,12 +1,14 @@
 #ifndef __XMALLOC_H__
 #define __XMALLOC_H__
 
-#ifdef HAVE_LIBC
+#if defined HAVE_LIBC 
 
 #include <stdlib.h>
-#include <malloc.h>
+/* #include <malloc.h> */
+#include <stdlib.h>
 /* Allocate space for typed object. */
-#define _xmalloc(size, align) memalign(align, size)
+/* #define _xmalloc(size, align) memalign(align, size) */
+#define _xmalloc(size, align) malloc(size)
 #define xfree(ptr) free(ptr)
 
 #else

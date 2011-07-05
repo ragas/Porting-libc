@@ -55,7 +55,7 @@
 static int console_initialised = 0;
 
 
-#ifndef HAVE_LIBC
+#if !defined HAVE_LIBC || !defined BSD_LIBC
 void xencons_rx(char *buf, unsigned len, struct pt_regs *regs)
 {
     if(len > 0)
