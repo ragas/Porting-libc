@@ -20,6 +20,7 @@
 
 
 #include<sys/stat.h> /* for fstat etc functions*/
+
 void printk(const char *fmt, ...);
 
 void _exit(int status)
@@ -41,17 +42,19 @@ ssize_t	 read(int fd , void *buf, size_t count)
 
             while(1) {
 
-                add_waiter(w, console_queue);
-		printk("HERE");
+                add_waiter(w, console_queue);  
+
                 ret = xencons_ring_recv(files[fd].cons.dev, buf, count);
 
-                if (ret)
-                    break;
+                if (ret){
+		  /* printk("\nRET:%x,%x",ret,&buf);		   */
+		  break;}
+
 
                 schedule();
-		
+
             }
-            remove_waiter(w);
+	    remove_waiter(w); 
             return ret;
         }
         /* case FTYPE_KBD: { */

@@ -96,7 +96,8 @@ void schedule(void)
            time when the next timeout expires, else use 10 seconds. */
         s_time_t now = NOW();
         s_time_t min_wakeup_time = now + SECONDS(10);
-        next = NULL;   
+        next = NULL;
+
         minios_list_for_each_safe(iterator, next_iterator, &idle_thread->thread_list)
 
         {
@@ -117,6 +118,8 @@ void schedule(void)
                 break;
             }
         }
+
+
         if (next)
             break;
         /* block until the next timeout expires, or for 10 secs, whichever comes first */
@@ -129,6 +132,7 @@ void schedule(void)
 
     /* Interrupting the switch is equivalent to having the next thread
        inturrupted at the return instruction. And therefore at safe point. */
+
     if(prev != next) switch_threads(prev, next);
 
     minios_list_for_each_safe(iterator, next_iterator, &exited_threads)
@@ -226,8 +230,11 @@ void exit_thread(void)
 
 void block(struct thread *thread)
 {
+
+  /* printk("\nTHREAD ADDRESS: %x\n",thread); */
     thread->wakeup_time = 0LL;
     clear_runnable(thread);
+
 }
 
 void msleep(uint32_t millisecs)

@@ -26,7 +26,8 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
  */
-extern int my_main(void);
+extern void my_main(void);
+extern void my_thread(void*);
 #include <mini-os/os.h>
 #include <mini-os/hypervisor.h>
 #include <mini-os/mm.h>
@@ -38,7 +39,7 @@ extern int my_main(void);
 #include <mini-os/xenbus.h>
 #include <mini-os/gnttab.h>
 /* #include <mini-os/netfront.h> */
-/* #include <mini-os/blkfront.h> */
+#include <mini-os/blkfront.h>
 /* #include <mini-os/fbfront.h> */
 /* #include <mini-os/pcifront.h> */
 #include <mini-os/xmalloc.h>
@@ -91,53 +92,53 @@ static void xenbus_tester(void *p)
 /*     net_dev = init_netfront(NULL, NULL, NULL, NULL); */
 /* } */
 
-/* static struct blkfront_dev *blk_dev; */
-/* static struct blkfront_info blk_info; */
-/* static uint64_t blk_size_read; */
-/* static uint64_t blk_size_write; */
+static struct blkfront_dev *blk_dev;
+static struct blkfront_info blk_info;
+static uint64_t blk_size_read;
+static uint64_t blk_size_write;
 
-/* struct blk_req { */
-/*     struct blkfront_aiocb aiocb; */
-/*     int rand_value; */
-/*     struct blk_req *next; */
-/* }; */
+struct blk_req {
+    struct blkfront_aiocb aiocb;
+    int rand_value;
+    struct blk_req *next;
+};
 
 /* #ifdef BLKTEST_WRITE */
 /* static struct blk_req *blk_to_read; */
 /* #endif */
 
-/* static struct blk_req *blk_alloc_req(uint64_t sector) */
-/* { */
-/*     struct blk_req *req = xmalloc(struct blk_req); */
-/*     req->aiocb.aio_dev = blk_dev; */
-/*     req->aiocb.aio_buf = _xmalloc(blk_info.sector_size, blk_info.sector_size); */
-/*     req->aiocb.aio_nbytes = blk_info.sector_size; */
-/*     req->aiocb.aio_offset = sector * blk_info.sector_size; */
-/*     req->aiocb.data = req; */
-/*     req->next = NULL; */
-/*     return req; */
-/* } */
+static struct blk_req *blk_alloc_req(uint64_t sector)
+{
+    struct blk_req *req = xmalloc(struct blk_req);
+    req->aiocb.aio_dev = blk_dev;
+    req->aiocb.aio_buf = _xmalloc(blk_info.sector_size, blk_info.sector_size);
+    req->aiocb.aio_nbytes = blk_info.sector_size;
+    req->aiocb.aio_offset = sector * blk_info.sector_size;
+    req->aiocb.data = req;
+    req->next = NULL;
+    return req;
+}
 
-/* static void blk_read_completed(struct blkfront_aiocb *aiocb, int ret) */
-/* { */
-/*     struct blk_req *req = aiocb->data; */
-/*     if (ret) */
-/*         printk("got error code %d when reading at offset %ld\n", ret, aiocb->aio_offset); */
-/*     else */
-/*         blk_size_read += blk_info.sector_size; */
-/*     free(aiocb->aio_buf); */
-/*     free(req); */
-/* } */
+static void blk_read_completed(struct blkfront_aiocb *aiocb, int ret)
+{
+    struct blk_req *req = aiocb->data;
+    if (ret)
+        printk("got error code %d when reading at offset %ld\n", ret, aiocb->aio_offset);
+    else
+        blk_size_read += blk_info.sector_size;
+    free(aiocb->aio_buf);
+    free(req);
+}
 
-/* static void blk_read_sector(uint64_t sector) */
-/* { */
-/*     struct blk_req *req; */
+static void blk_read_sector(uint64_t sector)
+{
+    struct blk_req *req;
 
-/*     req = blk_alloc_req(sector); */
-/*     req->aiocb.aio_cb = blk_read_completed; */
+    req = blk_alloc_req(sector);
+    req->aiocb.aio_cb = blk_read_completed;
 
-/*     blkfront_aio_read(&req->aiocb); */
-/* } */
+    blkfront_aio_read(&req->aiocb);
+}
 
 /* #ifdef BLKTEST_WRITE */
 /* static void blk_write_read_completed(struct blkfront_aiocb *aiocb, int ret) */
@@ -203,58 +204,58 @@ static void xenbus_tester(void *p)
 /* } */
 /* #endif */
 
-/* static void blkfront_thread(void *p) */
-/* { */
-/*     time_t lasttime = 0; */
+static void blkfront_thread(void *p)
+{
+    time_t lasttime = 0;
 
-/*     blk_dev = init_blkfront(NULL, &blk_info); */
-/*     if (!blk_dev) */
-/*         return; */
+    blk_dev = init_blkfront(NULL, &blk_info);
+    if (!blk_dev)
+        return;
 
-/*     if (blk_info.info & VDISK_CDROM) */
-/*         printk("Block device is a CDROM\n"); */
-/*     if (blk_info.info & VDISK_REMOVABLE) */
-/*         printk("Block device is removable\n"); */
-/*     if (blk_info.info & VDISK_READONLY) */
-/*         printk("Block device is read-only\n"); */
+    if (blk_info.info & VDISK_CDROM)
+        printk("Block device is a CDROM\n");
+    if (blk_info.info & VDISK_REMOVABLE)
+        printk("Block device is removable\n");
+    if (blk_info.info & VDISK_READONLY)
+        printk("Block device is read-only\n");
 
-/* #ifdef BLKTEST_WRITE */
-/*     if (blk_info.mode == O_RDWR) { */
-/*         blk_write_sector(0); */
-/*         blk_write_sector(blk_info.sectors-1); */
-/*     } else */
-/* #endif */
-/*     { */
-/*         blk_read_sector(0); */
-/*         blk_read_sector(blk_info.sectors-1); */
-/*     } */
+#ifdef BLKTEST_WRITE
+    if (blk_info.mode == O_RDWR) {
+        blk_write_sector(0);
+        blk_write_sector(blk_info.sectors-1);
+    } else
+#endif
+    {
+        blk_read_sector(0);
+        blk_read_sector(blk_info.sectors-1);
+    }
 
-/*     while (1) { */
-/*         uint64_t sector = rand() % blk_info.sectors; */
-/*         struct timeval tv; */
-/* #ifdef BLKTEST_WRITE */
-/*         if (blk_info.mode == O_RDWR) */
-/*             blk_write_sector(sector); */
-/*         else */
-/* #endif */
-/*             blk_read_sector(sector); */
-/*         blkfront_aio_poll(blk_dev); */
-/*         gettimeofday(&tv, NULL); */
-/*         if (tv.tv_sec > lasttime + 10) { */
-/*             printk("%llu read, %llu write\n", blk_size_read, blk_size_write); */
-/*             lasttime = tv.tv_sec; */
-/*         } */
+    while (1) {
+        uint64_t sector = rand() % blk_info.sectors;
+        struct timeval tv;
+#ifdef BLKTEST_WRITE
+        if (blk_info.mode == O_RDWR)
+            blk_write_sector(sector);
+        else
+#endif
+            blk_read_sector(sector);
+        blkfront_aio_poll(blk_dev);
+        gettimeofday(&tv, NULL);
+        if (tv.tv_sec > lasttime + 10) {
+            printk("%llu read, %llu write\n", blk_size_read, blk_size_write);
+            lasttime = tv.tv_sec;
+        }
 
-/* #ifdef BLKTEST_WRITE */
-/*         while (blk_to_read) { */
-/*             struct blk_req *req = blk_to_read; */
-/*             blk_to_read = blk_to_read->next; */
-/*             req->aiocb.aio_cb = blk_write_read_completed; */
-/*             blkfront_aio_read(&req->aiocb); */
-/*         } */
-/* #endif */
-/*     } */
-/* } */
+#ifdef BLKTEST_WRITE
+        while (blk_to_read) {
+            struct blk_req *req = blk_to_read;
+            blk_to_read = blk_to_read->next;
+            req->aiocb.aio_cb = blk_write_read_completed;
+            blkfront_aio_read(&req->aiocb);
+        }
+#endif
+    }
+}
 
 /* #define WIDTH 800 */
 /* #define HEIGHT 600 */
@@ -456,18 +457,24 @@ static void xenbus_tester(void *p)
 /* } */
 
 /* This should be overridden by the application we are linked against. */
+
+
 __attribute__((weak)) int app_main(start_info_t *si)
 {
     printk("Dummy main: start_info=%p\n", si);
     create_thread("xenbus_tester", xenbus_tester, si);
     /* create_thread("periodic_thread", periodic_thread, si); */
     /* create_thread("netfront", netfront_thread, si); */
-    /* create_thread("blkfront", blkfront_thread, si); */
+    create_thread("blkfront", blkfront_thread, si); 
     /* create_thread("fbfront", fbfront_thread, si); */
     /* create_thread("kbdfront", kbdfront_thread, si); */
     /* create_thread("pcifront", pcifront_thread, si); */
+    create_thread("my_thread", my_thread,si);    
     return 0;
 }
+
+
+
 
 /*
  * INITIAL C ENTRY POINT.
@@ -524,10 +531,12 @@ void start_kernel(start_info_t *si)
     /* Init XenBus */
     init_xenbus();
 
-    my_main();
-    /* Call (possibly overridden) app_main() */
-    //app_main(&start_info);
     
+    /* Call (possibly overridden) app_main() */
+    app_main(&start_info);
+    my_main();
+
+
     /* Everything initialised, start idle thread */
     run_idle_thread();
 }

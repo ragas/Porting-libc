@@ -122,28 +122,35 @@ int xencons_ring_recv(struct consfront_dev *dev, char *data, unsigned len)
 {
 
   struct xencons_interface *intf;
-	XENCONS_RING_IDX cons, prod;
-        unsigned filled = 0;
+  XENCONS_RING_IDX cons, prod;
+  unsigned filled = 0;
 
         if (!dev)
             intf = xencons_interface();
         else
             intf = dev->ring;
 
+	/* printk("\n intf %d,%d",(intf->in_cons),intf->in_prod);  */
+	
+	
+	
+
 	cons = intf->in_cons;
 	prod = intf->in_prod;
 	mb();
 	BUG_ON((prod - cons) > sizeof(intf->in));
 
+	/* printk("filled: %d, len: %d, cons + filled: %d, prod: %d",filled,len,cons+filled,prod); */
         while (filled < len && cons + filled != prod) {
                 data[filled] = *(intf->in + MASK_XENCONS_IDX(cons + filled, intf->in));
                 filled++;
+		/* printk("DATA %d\n",data[filled]); */
 	}
 
 	mb();
         intf->in_cons = cons + filled;
 
-	notify_daemon(dev);
+
 
         return filled;
 }

@@ -15,7 +15,7 @@ memory = 32
 
 # A name for your domain. All domains must have different names.
 name = "mos"
-
+disk = ['file:/otherlinux/home/sagar/VM/ubuntuserver.img,hda,r']
 on_crash = 'preserve'
 serial = 'pty'
 nographic = 1

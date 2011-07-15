@@ -39,7 +39,8 @@ enum fd_type {
     FTYPE_XC,
     FTYPE_EVTCHN,
     FTYPE_GNTMAP,
-    FTYPE_MEM
+    FTYPE_BLK,
+    FTYPE_MEM,
 };
 
 extern struct file {
@@ -54,6 +55,10 @@ extern struct file {
        * FD.  */
       xenbus_event_queue events;
     } xenbus;
+    struct {
+      struct blkfront_dev *dev;
+    } blk;
+
   };
   int read;	/* maybe available for read */
 } files[];
