@@ -1,3 +1,8 @@
 Impementation of BSD C library.
-To make, in folder mini-os
+
+Clone this repository:
+git clone https://github.com/ragas/Porting-libc
+
+
+Then in mini-os folder:
 $ make bsdlibc=y

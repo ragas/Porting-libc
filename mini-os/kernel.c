@@ -206,7 +206,7 @@ static void blk_read_sector(uint64_t sector)
 
 static void blkfront_thread(void *p)
 {
-    time_t lasttime = 0;
+    /* time_t lasttime = 0; */
 
     blk_dev = init_blkfront(NULL, &blk_info);
     if (!blk_dev)
@@ -230,31 +230,31 @@ static void blkfront_thread(void *p)
         blk_read_sector(blk_info.sectors-1);
     }
 
-    while (1) {
-        uint64_t sector = rand() % blk_info.sectors;
-        struct timeval tv;
-#ifdef BLKTEST_WRITE
-        if (blk_info.mode == O_RDWR)
-            blk_write_sector(sector);
-        else
-#endif
-            blk_read_sector(sector);
-        blkfront_aio_poll(blk_dev);
-        gettimeofday(&tv, NULL);
-        if (tv.tv_sec > lasttime + 10) {
-            printk("%llu read, %llu write\n", blk_size_read, blk_size_write);
-            lasttime = tv.tv_sec;
-        }
+/*     while (1) { */
+/*         uint64_t sector = rand() % blk_info.sectors; */
+/*         struct timeval tv; */
+/* #ifdef BLKTEST_WRITE */
+/*         if (blk_info.mode == O_RDWR) */
+/*             blk_write_sector(sector); */
+/*         else */
+/* #endif */
+/* 	  blk_read_sector(sector); */
+/*         blkfront_aio_poll(blk_dev); */
+/*         gettimeofday(&tv, NULL); */
+/*         if (tv.tv_sec > lasttime + 10) { */
+/*             printk("%llu read, %llu write\n", blk_size_read, blk_size_write); */
+/*             lasttime = tv.tv_sec; */
+/*         } */
 
-#ifdef BLKTEST_WRITE
-        while (blk_to_read) {
-            struct blk_req *req = blk_to_read;
-            blk_to_read = blk_to_read->next;
-            req->aiocb.aio_cb = blk_write_read_completed;
-            blkfront_aio_read(&req->aiocb);
-        }
-#endif
-    }
+/* #ifdef BLKTEST_WRITE */
+/*         while (blk_to_read) { */
+/*             struct blk_req *req = blk_to_read; */
+/*             blk_to_read = blk_to_read->next; */
+/*             req->aiocb.aio_cb = blk_write_read_completed; */
+/*             blkfront_aio_read(&req->aiocb); */
+/*         } */
+/* #endif */
+/*     } */
 }
 
 /* #define WIDTH 800 */
@@ -533,8 +533,9 @@ void start_kernel(start_info_t *si)
 
     
     /* Call (possibly overridden) app_main() */
-    app_main(&start_info);
     my_main();
+app_main(&start_info);
+    
 
 
     /* Everything initialised, start idle thread */

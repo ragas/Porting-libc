@@ -32,7 +32,7 @@ void _exit(int status)
 
 ssize_t	 read(int fd , void *buf, size_t count)
 {
-  printk("syscall_read\n");
+  /* printk("syscall_read\n"); */
     switch (files[fd].type) {
 
 	case FTYPE_CONSOLE: {
@@ -78,7 +78,7 @@ ssize_t	 read(int fd , void *buf, size_t count)
 
 ssize_t	 write(int fd, const void *buf, size_t count)
 {
-  printk("syscall_write");
+  /* printk("syscall_write"); */
 
     switch (files[fd].type) {
 	case FTYPE_CONSOLE:
@@ -109,13 +109,13 @@ int	 close(int fd)
 
 void *malloc(size_t size)
 {
-  printk("UNIMP_function_malloc\n");
+  /* printk("UNIMP_function_malloc\n"); */
   return NULL;
 }
 
 int mprotect(void *addr, size_t len, int port)
 {
-  printk("syscall_mprotect");
+  /* printk("syscall_mprotect"); */
   return 0; //Always success
 }
 
@@ -148,19 +148,15 @@ static void init_stat(struct stat *buf)
 
 int fstat(int fd, struct stat *buf)
 {
-  printk("syscall_fstat");
+  /* printk("syscall_fstat"); */
     init_stat(buf);
     switch (files[fd].type) {
-	/* case FTYPE_SAVEFILE: */
+
 	case FTYPE_CONSOLE:
-	/* case FTYPE_SOCKET: */ {
+	  {
             if (files[fd].type == FTYPE_CONSOLE)
                 buf->st_mode = S_IFCHR|S_IRUSR|S_IWUSR;
-            /* else if (files[fd].type == FTYPE_SOCKET) */
-            /*     buf->st_mode = S_IFSOCK|S_IRUSR|S_IWUSR; */
-            /* else if (files[fd].type == FTYPE_SAVEFILE) */
-            /*     buf->st_mode = S_IFREG|S_IRUSR|S_IWUSR; */
-	    buf->st_uid = 0;
+            buf->st_uid = 0;
 	    buf->st_gid = 0;
 	    buf->st_size = 0;
 	    buf->st_atime = 

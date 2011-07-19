@@ -6,6 +6,6 @@ DEF_CFLAGS += -Wstrict-prototypes -Wnested-externs -Wpointer-arith -Winline
 DEF_CFLAGS += -nostdinc -nostdlib
 DEF_CFLAGS += -I../include -I../arch/amd64 -I../include/sys
 
-
+OBJ := $(patsubst %.c,%.o,$(wildcard *.c))
 default: .
-	$(CC) $(DEF_CFLAGS) -c *.c
+	$(CC) $(DEF_CFLAGS) -c $(wildcard *.c)

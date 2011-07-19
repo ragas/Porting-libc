@@ -5,18 +5,13 @@
 #include <mini-os/sched.h>
 void my_main(void){
 
-  int d=1;
-  int *c;
-  c = (int*)malloc(sizeof(int));
-  *c = 1;
-  printf("\n %x:%d;; Successfully printed using BSD LIBC\n",c,*c);
-  /* scanf ("%d",&d); */
-  printf("\nscanned value: %d",d);
-
+   printf("\n Test Print\n");
+  
 }
 
 void my_thread(void *p){
   int d;
+  printf("Enter a number, Press Enter: ");
   scanf("%d",&d);
   printf("\nscanned value: %d\n",d);
 }
