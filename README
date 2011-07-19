@@ -2,7 +2,11 @@ Impementation of BSD C library.
 
 Clone this repository:
 git clone https://github.com/ragas/Porting-libc
+cd Porting-libc
+make
+
+This will make mini-os.gz. 
+domain_config file can be used to create the virtual domain.
+xl create -c domain_config
 
 
-Then in mini-os folder:
-$ make bsdlibc=y
