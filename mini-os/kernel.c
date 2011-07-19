@@ -95,7 +95,7 @@ static void xenbus_tester(void *p)
 static struct blkfront_dev *blk_dev;
 static struct blkfront_info blk_info;
 static uint64_t blk_size_read;
-static uint64_t blk_size_write;
+static uint64_t blk_size_write; 
 
 struct blk_req {
     struct blkfront_aiocb aiocb;
@@ -126,6 +126,8 @@ static void blk_read_completed(struct blkfront_aiocb *aiocb, int ret)
         printk("got error code %d when reading at offset %ld\n", ret, aiocb->aio_offset);
     else
         blk_size_read += blk_info.sector_size;
+
+
     free(aiocb->aio_buf);
     free(req);
 }
@@ -138,6 +140,8 @@ static void blk_read_sector(uint64_t sector)
     req->aiocb.aio_cb = blk_read_completed;
 
     blkfront_aio_read(&req->aiocb);
+    
+    printk("ADDRESS: %x ",req->aiocb.gref);
 }
 
 /* #ifdef BLKTEST_WRITE */
@@ -206,7 +210,7 @@ static void blk_read_sector(uint64_t sector)
 
 static void blkfront_thread(void *p)
 {
-    /* time_t lasttime = 0; */
+  time_t lasttime = 0; 
 
     blk_dev = init_blkfront(NULL, &blk_info);
     if (!blk_dev)
@@ -226,35 +230,44 @@ static void blkfront_thread(void *p)
     } else
 #endif
     {
+      /* int i =0 ; */
+      /* for (i=0;i < 10;i++){ */
         blk_read_sector(0);
-        blk_read_sector(blk_info.sectors-1);
+
+      	 blkfront_aio_poll(blk_dev);
+	blkfront_sync(blk_dev);
+      	/* printk("%d Sector, %llu read\n", blk_info.sectors, blk_size_read); */
+      /* } */
     }
-
-/*     while (1) { */
-/*         uint64_t sector = rand() % blk_info.sectors; */
-/*         struct timeval tv; */
-/* #ifdef BLKTEST_WRITE */
-/*         if (blk_info.mode == O_RDWR) */
-/*             blk_write_sector(sector); */
-/*         else */
-/* #endif */
-/* 	  blk_read_sector(sector); */
-/*         blkfront_aio_poll(blk_dev); */
-/*         gettimeofday(&tv, NULL); */
-/*         if (tv.tv_sec > lasttime + 10) { */
-/*             printk("%llu read, %llu write\n", blk_size_read, blk_size_write); */
-/*             lasttime = tv.tv_sec; */
-/*         } */
-
-/* #ifdef BLKTEST_WRITE */
-/*         while (blk_to_read) { */
-/*             struct blk_req *req = blk_to_read; */
-/*             blk_to_read = blk_to_read->next; */
-/*             req->aiocb.aio_cb = blk_write_read_completed; */
-/*             blkfront_aio_read(&req->aiocb); */
-/*         } */
-/* #endif */
-/*     } */
+    int i = 0;
+    while (i) {
+      
+      uint64_t sector = 0;  /* rand() % blk_info.sectors; */
+        struct timeval tv;
+#ifdef BLKTEST_WRITE
+        if (blk_info.mode == O_RDWR)
+            blk_write_sector(sector);
+        else
+#endif
+	  blk_read_sector(sector);
+        blkfront_aio_poll(blk_dev);
+        gettimeofday(&tv, NULL);
+        if (tv.tv_sec > lasttime + 10) {
+            printk("%llu Read, %llu write\n", blk_size_read, blk_size_write);
+            lasttime = tv.tv_sec;
+	    if (blk_size_read != 0 ) i=0;
+        }
+	
+#ifdef BLKTEST_WRITE
+        while (blk_to_read) {
+            struct blk_req *req = blk_to_read;
+            blk_to_read = blk_to_read->next;
+            req->aiocb.aio_cb = blk_write_read_completed;
+            blkfront_aio_read(&req->aiocb);
+        }
+#endif
+	
+    }
 }
 
 /* #define WIDTH 800 */
@@ -534,9 +547,9 @@ void start_kernel(start_info_t *si)
     
     /* Call (possibly overridden) app_main() */
     my_main();
-app_main(&start_info);
+    app_main(&start_info);
     
-
+    create_thread("my_thread", my_thread,si);    
 
     /* Everything initialised, start idle thread */
     run_idle_thread();

@@ -16,11 +16,11 @@ default: stdio gen locale libstubs arch string stdlib thread
 	cd string;make
 	cd stdlib;make
 	cd thread;make
-	ar r libc2.a stdio/*.o
-	ar r libc2.a gen/*.o
-	ar r libc2.a locale/*.o
-	ar r libc2.a libstubs/*.o
-	ar r libc2.a arch/amd64/string/*.o
-	ar r libc2.a string/*.o
-	ar r libc2.a stdlib/*.o
-	ar r libc2.a thread/*.o
+	ar r libc.a stdio/*.o
+	ar r libc.a gen/*.o
+	ar r libc.a locale/*.o
+	ar r libc.a libstubs/*.o
+	ar r libc.a arch/amd64/string/*.o
+	ar r libc.a string/*.o
+	ar r libc.a stdlib/*.o
+	ar r libc.a thread/*.o

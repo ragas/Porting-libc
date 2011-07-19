@@ -169,7 +169,7 @@ int fstat(int fd, struct stat *buf)
     }
 
     printk("statf(%d): Bad descriptor\n", fd);
-    /* errno = EBADF; */
+    /* errxono = EBADF; */
     return -1;
 }
 

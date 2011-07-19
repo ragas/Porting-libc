@@ -10,9 +10,9 @@ void my_main(void){
 }
 
 void my_thread(void *p){
-  int d;
-  printf("Enter a number, Press Enter: ");
-  scanf("%d",&d);
-  printf("\nscanned value: %d\n",d);
+  char d;
+  printf("Enter a char, Press Enter: ");
+  scanf("%c",&d);
+  printf("\nscanned value: %c\n",d);
 }
 
