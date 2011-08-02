@@ -69,11 +69,6 @@ void setup_xen_features(void)
 
 void test_xenbus(void);
 
-static void xenbus_tester(void *p)
-{
-    printk("Xenbus tests disabled, because of a Xend bug.\n");
-    /* test_xenbus(); */
-}
 
 /* static void periodic_thread(void *p) */
 /* { */
@@ -475,7 +470,7 @@ static void blkfront_thread(void *p)
 __attribute__((weak)) int app_main(start_info_t *si)
 {
     printk("Dummy main: start_info=%p\n", si);
-    create_thread("xenbus_tester", xenbus_tester, si);
+    /* create_thread("xenbus_tester", xenbus_tester, si); */
     /* create_thread("periodic_thread", periodic_thread, si); */
     /* create_thread("netfront", netfront_thread, si); */
     create_thread("blkfront", blkfront_thread, si); 

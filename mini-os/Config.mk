@@ -49,7 +49,7 @@ DEF_CPPFLAGS += -isystem $(XEN_ROOT)/include
 DEF_CPPFLAGS += -isystem $(XEN_ROOT)/libc/include
 DEF_CPPFLAGS += -isystem $(XEN_ROOT)/libc/include/sys
 DEF_CPPFLAGS += -isystem $(XEN_ROOT)/libc/arch/amd64
-
+DEF_CPPFLAGS += -isystem $(XEN_ROOT)/libpthread/include
 endif
 ifeq ($(libc),y)
 DEF_CPPFLAGS += -DHAVE_LIBC

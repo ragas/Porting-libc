@@ -103,8 +103,8 @@ void rewinddir(DIR *);
 int closedir(DIR *);
 #if __BSD_VISIBLE
 DIR *__opendir2(const char *, int);
-int getdirentries(int, char *, int, off_t *)
-		__attribute__ ((__bounded__(__string__,2,3)));
+int getdirentries(int, char *, int, off_t *);
+		/* __attribute__ ((__bounded__(__string__,2,3))); */
 #endif /* __BSD_VISIBLE */
 #if __XPG_VISIBLE
 long telldir(DIR *);

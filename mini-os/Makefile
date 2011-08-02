@@ -85,7 +85,9 @@ OBJS := $(filter-out $(OBJ_DIR)/lwip%.o $(LWO), $(OBJS))
 ifeq ($(bsdlibc),y)
 LDLIBS += -nostdlib
 LDLIBS += -L$(XEN_ROOT)/libc
-LDLIBS += -lc
+LDLIBS += -lc 
+LDLIBS += -L$(XEN_ROOT)/libpthread
+LDLIBS += -lpthread
 endif
 
 ifeq ($(libc),y)
@@ -109,7 +111,7 @@ endif
 
 $(OBJ_DIR)/$(TARGET): links $(OBJS) $(APP_O) arch_lib
 	$(LD) -r $(LDFLAGS) $(HEAD_OBJ) $(APP_O) $(OBJS) $(LDARCHLIB) $(LDLIBS) -o $@.o
-	$(OBJCOPY) -w -G $(GLOBAL_PREFIX)* -G _start $@.o $@.o
+	# $(OBJCOPY) -w -G $(GLOBAL_PREFIX)* -G _start $@.o $@.o
 	$(LD) $(LDFLAGS) $(LDFLAGS_FINAL) $@.o $(EXTRA_OBJS) -o $@
 	gzip -f -9 -c $@ >$@.gz
 

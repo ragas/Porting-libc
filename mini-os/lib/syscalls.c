@@ -247,3 +247,13 @@ void free(void *ptr)
 {
   printk("free");
 }
+
+
+int     _thread_sys_close(int t){
+  return 0;
+}
+
+int _thread_sys_fcntl(int fd, int cmd, ...){
+  return 0;
+
+}
