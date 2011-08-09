@@ -169,10 +169,10 @@ _thread_init(void)
 	if (_thread_initial)
 		/* Only initialise the threaded application once. */
 		return;
-	printk("REF");
-	if (references[0] == NULL)
-		PANIC("Failed loading mandatory references in _thread_init");
-	printk("INIT");
+
+	printk("REF,%x",references[0]);
+	/* if (references[0] == NULL)	PANIC("Failed loading mandatory references in _thread_init"); */
+
 	/*
 	 * Check for the special case of this process running as
 	 * or in place of init as pid = 1:
@@ -182,12 +182,16 @@ _thread_init(void)
 		 * Setup a new session for this process which is
 		 * assumed to be running as root.
 		 */
+
 		if (setsid() == -1)
 			PANIC("Can't set session ID");
+		
 		if (revoke(_PATH_CONSOLE) != 0)
 			PANIC("Can't revoke console");
+	
 		if ((fd = _thread_sys_open(_PATH_CONSOLE, O_RDWR)) < 0)
 			PANIC("Can't open console");
+	  
 		if (setlogin("root") == -1)
 			PANIC("Can't set login to root");
 		if (_thread_sys_ioctl(fd,TIOCSCTTY, (char *) NULL) == -1)
@@ -197,7 +201,7 @@ _thread_init(void)
 		    _thread_sys_dup2(fd,2) == -1)
 			PANIC("Can't dup2");
 	}
-	printk("1\n");
+
 	/*
 	 * Create a pipe that is written to by the signal handler to prevent
 	 * signals being missed in calls to _select:

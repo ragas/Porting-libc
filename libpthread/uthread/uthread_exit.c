@@ -239,8 +239,10 @@ pthread_exit(void *status)
 
 	/* This thread will never be re-scheduled. */
 	_thread_kern_sched_state(PS_DEAD, __FILE__, __LINE__);
-
-	/* This point should not be reached. */
+	
+	_thread_exit(__FILE__,__LINE__,"exit");
+	
+/* This point should not be reached. */
 	PANIC("Dead thread has resumed");
 }
 #endif

@@ -66,7 +66,7 @@
  * Kernel fatal error handler macro.
  */
 void printk(const char *fmt, ...);
-#define PANIC(string)   printk(string);_thread_exit(__FILE__,__LINE__,string)
+#define PANIC(string)   printk(string)
 
 /* Output debug messages like this: */
 #define	stdout_debug(_x)	_thread_sys_write(1,_x,strlen(_x));

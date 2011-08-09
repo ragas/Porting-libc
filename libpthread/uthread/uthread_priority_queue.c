@@ -91,7 +91,7 @@ _pq_alloc(pq_queue_t *pq, int minprio, int maxprio)
 
 	if (pq == NULL || prioslots < 1)
 		ret = -1;
-
+	
 	/* Create the priority queue with (maxprio - minprio + 1) slots: */
 	else if	((pq->pq_lists =
 	    (pq_list_t *) malloc(sizeof(pq_list_t) * (size_t)prioslots)) == NULL)

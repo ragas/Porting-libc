@@ -15,20 +15,24 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <math.h>
+#include <signal.h>
+#include <poll.h>
+#include <sys/socket.h>
 
+#include <sys/resource.h>
 
-
-
+#include <sys/param.h>
+#include <sys/mount.h>
 #include<sys/stat.h> /* for fstat etc functions*/
 
 void printk(const char *fmt, ...);
 
-void _exit(int status)
-{
-  /* How should this work? */
-  do_exit();
-  stop_kernel();
-}
+/* void _exit(int status) */
+/* { */
+/*   /\* How should this work? *\/ */
+/*   do_exit(); */
+/*   stop_kernel(); */
+/* } */
 
 ssize_t	 read(int fd , void *buf, size_t count)
 {
@@ -109,7 +113,7 @@ int	 close(int fd)
 
 void *malloc(size_t size)
 {
-  /* printk("UNIMP_function_malloc\n"); */
+  printk("UNIMP_function_malloc\n"); 
   return NULL;
 }
 
@@ -186,7 +190,7 @@ void abort(void)
   for(;;);
 }
 
-#define NOFILE 32
+/* #define NOFILE 32 */
 struct file files[NOFILE] = {
     { .type = FTYPE_CONSOLE }, /* stdin */
     { .type = FTYPE_CONSOLE }, /* stdout */
@@ -248,6 +252,28 @@ void free(void *ptr)
   printk("free");
 }
 
+pid_t getpid(void)
+{
+    printk("GETPID\n");
+    return 1;
+}
+
+pid_t getppid(void)
+{
+
+    return 1;
+}
+
+pid_t setsid(void)
+{
+  printk("SETSID\n");
+    return 0;
+}
+
+
+/***********
+for threading
+***********/
 
 int     _thread_sys_close(int t){
   return 0;
@@ -256,4 +282,205 @@ int     _thread_sys_close(int t){
 int _thread_sys_fcntl(int fd, int cmd, ...){
   return 0;
 
+}
+
+
+void	_thread_sys__exit(int t) {
+}
+
+pid_t	_thread_sys_getpid(void) {
+  return 1;
+}
+
+int     _thread_sys_dup2(int oldfd, int newfd) {
+  return 0;
+}
+
+int     _thread_sys_ioctl(int d, unsigned long request, ...){
+
+  return 0;
+}
+
+int     _thread_sys_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact){
+  return 0;
+}
+
+int     _thread_sys_sigprocmask(int how, const sigset_t *set, sigset_t *oldset){
+  return 0;
+}
+
+ssize_t _thread_sys_read(int fd , void *buf, size_t count){
+  return 0;
+}
+ssize_t _thread_sys_write(int fd, const void *buf, size_t count){
+  return 0;
+}
+
+int     _thread_sys_open(const char *pathname, int flags, ...){
+  printk("_SYS_OPEN\n");
+  int fd ;
+  fd = alloc_fd(FTYPE_CONSOLE);
+  return fd;
+}
+
+int     _thread_sys_pipe(int *pipefd){
+  return 0;
+}
+
+int 	_thread_sys_poll(struct pollfd *fds, unsigned nfds, int timeout){
+  return 0;
+
+}
+
+pid_t   _thread_sys_fork(void){
+  return 0;
+}
+
+pid_t   _thread_sys_vfork(void){
+  return 0;
+}
+
+int     _thread_sys_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen){
+
+  return 0;
+}
+
+int     _thread_sys_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen){
+  return 0;
+}
+
+
+int     _thread_sys_dup(int oldfd){
+  return 0;
+}
+
+int     _thread_sys_closefrom(int x){
+  return 0;
+}
+
+int     _thread_sys_execve(const char *filename, char * const *argv, char * const *envp){
+  return 0;
+}
+
+int     _thread_sys_fchflags(int x, unsigned int y){
+  return 0;
+
+}
+
+int     _thread_sys_fchmod(int fd, mode_t mode){
+  return 0;
+}
+
+int     _thread_sys_fchown(int fd, uid_t owner, gid_t group){
+  return 0;
+}
+
+int     _thread_sys_flock(int fd, int operation){
+  return 0;
+}
+
+long	_thread_sys_fpathconf(int fd, int name){
+  return 0;
+}
+
+int     _thread_sys_fsync(int fd){
+  return 0;
+}
+
+int     _thread_sys_fstatfs(int fd, struct statfs *buf){
+  return 0;
+}
+
+int     _thread_sys_getdirentries(int fd, char *buf, int nbytes, off_t *basep){
+  return 0;
+}
+
+int     _thread_sys_getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen){
+  return 0;
+}
+
+int     _thread_sys_getsockname(int sockfd, struct sockaddr *addr, socklen_t *addrlen){
+  return 0;
+}
+
+int     _thread_sys_getsockopt(int sockfd, int level, int optname, void *optval, socklen_t *optlen){
+  return 0;
+}
+
+int     _thread_sys_listen(int sockfd, int backlog){
+  return 0;
+}
+
+
+ssize_t _thread_sys_readv(int fd, const struct iovec *iov, int iovcnt){
+  return 0;
+}
+
+
+ssize_t _thread_sys_writev(int fd, const struct iovec *iov, int iovcnt){
+  return 0;
+}
+
+int setitimer(int which, const struct itimerval *new_value,
+	      struct itimerval *old_value){
+
+  return 0;
+}
+
+int sigismember(const sigset_t *set, int signum){
+  return 0;
+}
+
+void *calloc(size_t nmemb, size_t size){
+
+  return NULL;
+}
+
+char *getenv(const char *name){
+  return NULL;
+}
+
+int clock_gettime(clockid_t clk_id, struct timespec *tp){
+
+  return 0;
+
+}
+
+int revoke(const char *path){
+
+  return 0;
+}
+
+int  setlogin(const char *name){
+  printk("SETLOGIN");
+  return 0;
+}
+
+int sigaddset(sigset_t *set, int signum){
+
+  return 0;
+}
+
+int getrlimit(int resource, struct rlimit *rlim){
+
+  return 0;
+}
+
+int sigdelset(sigset_t *set, int signum){
+  return 0;
+}
+
+int msync(void *addr, size_t length, int flags){
+  return 0;
+
+}
+
+unsigned int sleep(unsigned int seconds){
+  return 0;
+}
+
+
+int _thread_sys_fstat(int fd, struct stat *buf){
+
+  return 0;
 }
