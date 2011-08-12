@@ -17,7 +17,9 @@ void *_background_thread(void *x){
 }
 
 void *f2(void *x){
+
   sleep(5);
+  printf("\n\n\n\n\n\n\n\n\n\n\n");
   pthread_t background_thread,some_thread;
   printf("\n&&&&&&&\nInside FIRST Thread\n&&&&&&&\n");
 
@@ -35,10 +37,10 @@ void *f2(void *x){
 
 
 void *my_thread(void *p){
-  char d;
-  printf("In thread my_thread \n Enter a char, Press Enter: ");
-  scanf("%c",&d);
-  printf("\nscanned value: %c\n",d);
+  int d;
+  printf("In thread my_thread \n Enter a Number, Press Enter: ");
+  scanf("%d",&d);
+  printf(" %d\n",d);
   return NULL;
 }
 
