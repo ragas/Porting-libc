@@ -27,7 +27,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 extern void my_main(void);
-extern void my_thread(void*);
+
 #include <mini-os/os.h>
 #include <mini-os/hypervisor.h>
 #include <mini-os/mm.h>
@@ -482,7 +482,7 @@ __attribute__((weak)) int app_main(start_info_t *si)
     /* create_thread("fbfront", fbfront_thread, si); */
     /* create_thread("kbdfront", kbdfront_thread, si); */
     /* create_thread("pcifront", pcifront_thread, si); */
-    create_thread("my_thread", my_thread,si);    
+    
     return 0;
 }
 
@@ -546,11 +546,11 @@ void start_kernel(start_info_t *si)
 
     
     /* Call (possibly overridden) app_main() */
-    my_main();
-    app_main(&start_info);
     
-    create_thread("my_thread", my_thread,si);    
+    app_main(&start_info);
 
+    my_main();
+    
     /* Everything initialised, start idle thread */
     run_idle_thread();
 }

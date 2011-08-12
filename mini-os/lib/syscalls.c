@@ -247,3 +247,43 @@ void free(void *ptr)
 {
   printk("free");
 }
+
+int nanosleep(const struct timespec *req, struct timespec *rem)
+{
+    s_time_t start = NOW();
+    s_time_t stop = start + SECONDS(req->tv_sec) + req->tv_nsec;
+    s_time_t stopped;
+    struct thread *thread = get_current();
+
+    thread->wakeup_time = stop;
+    clear_runnable(thread);
+    schedule();
+    stopped = NOW();
+
+    if (rem)
+    {
+	s_time_t remaining = stop - stopped;
+	if (remaining > 0)
+	{
+	    rem->tv_nsec = remaining % 1000000000ULL;
+	    rem->tv_sec  = remaining / 1000000000ULL;
+	} else memset(rem, 0, sizeof(*rem));
+    }
+
+    return 0;
+}
+
+unsigned int sleep(unsigned int seconds)
+{
+    struct timespec req, rem;
+    req.tv_sec = seconds;
+    req.tv_nsec = 0;
+
+    if (nanosleep(&req, &rem))
+	return -1;
+
+    if (rem.tv_nsec > 0)
+	rem.tv_sec++;
+
+    return rem.tv_sec;
+}

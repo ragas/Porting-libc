@@ -101,7 +101,7 @@ struct thread* arch_create_thread(char *name, void (*function)(void *),
     /* We can't use lazy allocation here since the trap handler runs on the stack */
     thread->stack = (char *)alloc_pages(STACK_SIZE_PAGE_ORDER);
     thread->name = name;
-    printk("Thread \"%s\": pointer: 0x%lx, stack: 0x%lx\n", name, thread, 
+    printk("New Thread \"%s\": pointer: 0x%lx, stack: 0x%lx\n", name, thread, 
             thread->stack);
     
     thread->sp = (unsigned long)thread->stack + STACK_SIZE;

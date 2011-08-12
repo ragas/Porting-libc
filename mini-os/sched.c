@@ -72,13 +72,18 @@ void inline print_runqueue(void)
     printk("\n");
 }
 
+
 void schedule(void)
 {
+  /* printk("$$$$$$$$ Scheduling $$$$$$$$\n"); */
     struct thread *prev, *next, *thread;
     struct minios_list_head *iterator, *next_iterator;
     unsigned long flags;
 
     prev = current;
+    /* if (prev == NULL) */
+    /*   prev = idle_thread; */
+    /* printk("CALLED BY:%x,%s\n",prev,prev->name); */
     local_irq_save(flags); 
 
     if (in_callback) {
@@ -95,13 +100,15 @@ void schedule(void)
            Find a runnable thread, but also wake up expired ones and find the
            time when the next timeout expires, else use 10 seconds. */
         s_time_t now = NOW();
+
         s_time_t min_wakeup_time = now + SECONDS(10);
         next = NULL;
 
         minios_list_for_each_safe(iterator, next_iterator, &idle_thread->thread_list)
 
-        {
+	  {
             thread = minios_list_entry(iterator, struct thread, thread_list);
+	    /* printk("%s,run:%d,%s,run:%d, NEXT:%x\n",thread->name,is_runnable(thread),prev->name,is_runnable(prev),next);  */
             if (!is_runnable(thread) && thread->wakeup_time != 0LL)
             {
                 if (thread->wakeup_time <= now)
@@ -117,11 +124,13 @@ void schedule(void)
                 minios_list_add_tail(&thread->thread_list, &idle_thread->thread_list);
                 break;
             }
-        }
+	  }
 
 
-        if (next)
-            break;
+	
+        if (next){
+		break;
+	}
         /* block until the next timeout expires, or for 10 secs, whichever comes first */
         block_domain(min_wakeup_time);
         /* handle pending events if any */
@@ -133,18 +142,24 @@ void schedule(void)
     /* Interrupting the switch is equivalent to having the next thread
        inturrupted at the return instruction. And therefore at safe point. */
 
+    /* printk("$$$$$$$$ Switching $$$$$$$$\n %x:%s,%x%s\n",prev,prev->name,next,next->name); */
     if(prev != next) switch_threads(prev, next);
-
+    /* printk("$$$$DONE SWI$$$\n"); */
+ 
     minios_list_for_each_safe(iterator, next_iterator, &exited_threads)
     {
         thread = minios_list_entry(iterator, struct thread, thread_list);
         if(thread != prev)
         {
+	  /* printk("DEL THREAD %x,%s\n",thread,thread->name); */
             minios_list_del(&thread->thread_list);
             free_pages(thread->stack, STACK_SIZE_PAGE_ORDER);
             xfree(thread);
         }
     }
+
+    /* printk("^^^DONE SCHED^^^\n"); */
+ 
 }
 
 struct thread* create_thread(char *name, void (*function)(void *), void *data)
@@ -168,7 +183,9 @@ struct thread* create_thread(char *name, void (*function)(void *), void *data)
         printk("BUG: Not allowed to create thread before initialising scheduler.\n");
         BUG();
     }
+
     local_irq_restore(flags);
+
     return thread;
 }
 
@@ -212,7 +229,7 @@ void exit_thread(void)
 {
     unsigned long flags;
     struct thread *thread = current;
-    printk("Thread \"%s\" exited.\n", thread->name);
+    printk("Thread \"%s\" at %x exited.\n", thread->name, thread);
     local_irq_save(flags);
     /* Remove from the thread list */
     minios_list_del(&thread->thread_list);
@@ -220,13 +237,19 @@ void exit_thread(void)
     /* Put onto exited list */
     minios_list_add(&thread->thread_list, &exited_threads);
     local_irq_restore(flags);
+
+
     /* Schedule will free the resources */
     while(1)
     {
+
         schedule();
         printk("schedule() returned!  Trying again\n");
     }
+
 }
+
+
 
 void block(struct thread *thread)
 {

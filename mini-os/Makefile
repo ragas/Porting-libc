@@ -85,7 +85,9 @@ OBJS := $(filter-out $(OBJ_DIR)/lwip%.o $(LWO), $(OBJS))
 ifeq ($(bsdlibc),y)
 LDLIBS += -nostdlib
 LDLIBS += -L$(XEN_ROOT)/libc
+LDLIBS += -L$(XEN_ROOT)/libpthread
 LDLIBS += -lc
+
 endif
 
 ifeq ($(libc),y)
