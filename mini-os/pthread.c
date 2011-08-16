@@ -170,7 +170,8 @@ int pthread_mutex_lock(pthread_mutex_t *mutex){
 
  else {
    /* printk("Called by: %x Already Acq by %x \n",thread,(*mutex)->m_owner); */
-   unsigned long flags;
+   if (thread != (*mutex)->m_owner){
+unsigned long flags;
    local_irq_save(flags);
    
    minios_list_del(&thread->thread_list);
@@ -179,10 +180,10 @@ int pthread_mutex_lock(pthread_mutex_t *mutex){
    minios_list_add(&thread->thread_list, &(*mutex)->m_blocked->thread_list); 
    local_irq_restore(flags);
 
-
+   /* printk("lock %x\n",thread); */
    block(thread);
 
-
+   }
    schedule();
    
   }
@@ -198,7 +199,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
 
   thread = current;
 
-
+  /* printk("Unlock %x\n",thread); */
 
   unsigned long flags;
   local_irq_save(flags);
@@ -219,7 +220,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
    
 
   local_irq_restore(flags);
-
+  schedule();
   /*  pthread_t thread,wake_up; */
   /* thread = current; */
   /* struct minios_list_head *it, *n; */
@@ -236,4 +237,8 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
  
  /* free(mutex); */
   return 0;
+}
+
+void	pthread_exit(void *unused){
+  exit_thread();
 }

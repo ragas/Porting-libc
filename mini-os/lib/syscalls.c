@@ -212,7 +212,7 @@ int alloc_fd(enum fd_type type)
 
 void *mmap(void *start, size_t length, int prot, int flags, int fd, off_t offset)
 {
-  printk("syscall_*mmap");
+  /* printk("syscall_*mmap"); */
   unsigned long n = (length + PAGE_SIZE - 1) / PAGE_SIZE;
   
   ASSERT(!start);
