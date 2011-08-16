@@ -67,7 +67,7 @@ void inline print_runqueue(void)
     minios_list_for_each(it, &idle_thread->thread_list)
     {
         th = minios_list_entry(it, struct thread, thread_list);
-        printk("   Thread \"%s\", runnable=%d\n", th->name, is_runnable(th));
+        printk("   Thread \"%x\", runnable=%d\n", th, is_runnable(th));
     }
     printk("\n");
 }
@@ -83,7 +83,7 @@ void schedule(void)
     prev = current;
     /* if (prev == NULL) */
     /*   prev = idle_thread; */
-    /* printk("CALLED BY:%x,%s\n",prev,prev->name); */
+    /* printk("CALLED BY:%x,%s\n",prev,prev->name);  */
     local_irq_save(flags); 
 
     if (in_callback) {
@@ -108,7 +108,8 @@ void schedule(void)
 
 	  {
             thread = minios_list_entry(iterator, struct thread, thread_list);
-	    /* printk("%s,run:%d,%s,run:%d, NEXT:%x\n",thread->name,is_runnable(thread),prev->name,is_runnable(prev),next);  */
+	    /* printk("%x,run:%d,%s,run:%d, NEXT:%x\n",thread,is_runnable(thread),prev->name,is_runnable(prev),next);    */
+
             if (!is_runnable(thread) && thread->wakeup_time != 0LL)
             {
                 if (thread->wakeup_time <= now)
@@ -142,7 +143,7 @@ void schedule(void)
     /* Interrupting the switch is equivalent to having the next thread
        inturrupted at the return instruction. And therefore at safe point. */
 
-    /* printk("$$$$$$$$ Switching $$$$$$$$\n %x:%s,%x%s\n",prev,prev->name,next,next->name); */
+     /* printk("$$$$$$$$ Switching $$$$$$$$\n %x:%s,%x%s\n",prev,prev->name,next,next->name);  */
     if(prev != next) switch_threads(prev, next);
     /* printk("$$$$DONE SWI$$$\n"); */
  
@@ -158,7 +159,7 @@ void schedule(void)
         }
     }
 
-    /* printk("^^^DONE SCHED^^^\n"); */
+     /* printk("^^^DONE SCHED^^^\n");  */
  
 }
 
@@ -254,7 +255,8 @@ void exit_thread(void)
 void block(struct thread *thread)
 {
 
-  /* printk("\nTHREAD ADDRESS: %x\n",thread); */
+  /* printk("\nTHREAD BLOCKED: %x\n",thread);   */
+
     thread->wakeup_time = 0LL;
     clear_runnable(thread);
 

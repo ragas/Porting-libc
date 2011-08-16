@@ -129,7 +129,7 @@ struct pthread_rwlockattr;
 #define pthread thread
 typedef struct	pthread			*pthread_t;
 typedef struct	pthread_attr		*pthread_attr_t;
-typedef volatile struct pthread_mutex	*pthread_mutex_t;
+typedef  struct pthread_mutex	*pthread_mutex_t;
 typedef struct	pthread_mutex_attr	*pthread_mutexattr_t;
 typedef struct	pthread_cond		*pthread_cond_t;
 typedef struct	pthread_cond_attr	*pthread_condattr_t;
