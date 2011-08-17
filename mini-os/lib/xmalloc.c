@@ -272,6 +272,8 @@ void xfree(const void *p)
     else
     {
         minios_list_add(&hdr->freelist, &freelist);
+
+
     }
 
     /* spin_unlock_irqrestore(&freelist_lock, flags); */

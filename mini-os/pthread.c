@@ -58,13 +58,8 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,void *(*startfu
 
   pthread_t newthread;
   pthread_attr_t newattr;
-
-  
   unsigned long flags;
-  
 
-  
-  
   if(attr == NULL){
     newattr = malloc(sizeof(pthread_attr_t));
     pthread_attr_init(&newattr);
@@ -91,7 +86,7 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,void *(*startfu
  
   minios_list_add_tail(&newthread->thread_list, &idle_thread->thread_list); 
   
-
+  newthread->join_list = NULL;
   local_irq_restore(flags);
   *thread = newthread; 
 
@@ -113,42 +108,54 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,void *(*startfu
 /* } */
 
 
-int scan_threads(pthread_t thread){
+/* int scan_threads(pthread_t thread){ */
 
   
-  struct thread *checkthread;
-  struct minios_list_head *iterator, *next_iterator;
+/*   struct thread *checkthread; */
+/*   struct minios_list_head *iterator, *next_iterator; */
 
 
-  minios_list_for_each_safe(iterator, next_iterator, &idle_thread->thread_list)
+/*   minios_list_for_each_safe(iterator, next_iterator, &idle_thread->thread_list) */
     
-    {
-      checkthread = minios_list_entry(iterator, struct thread, thread_list);
-      if (checkthread == thread){
-	schedule();
-	return -1;
-      }
-    }
-  return 0;
-}
+/*     { */
+/*       checkthread = minios_list_entry(iterator, struct thread, thread_list); */
+/*       if (checkthread == thread){ */
+/* 	schedule(); */
+/* 	return -1; */
+/*       } */
+/*     } */
+/*   return 0; */
+/* } */
 
 int pthread_join(pthread_t thread, void **valptr)
 {
   
+  pthread_t cur_thread;
+  cur_thread = current;
 
-  /* block(current); */
+  if( thread->join_list == NULL){
+    thread->join_list = malloc(sizeof(struct thread));
 
+    thread->join_list->flags = 0;
+    thread->join_list->thread_list.prev = &thread->join_list->thread_list;
+    thread->join_list->thread_list.next = &thread->join_list->thread_list;
+
+  }
+
+  /* block the calling thread, add it to waiting threads join_list */
+  unsigned long flags;
+  local_irq_save(flags);
+   
+  minios_list_del(&cur_thread->thread_list);
+  clear_runnable(cur_thread);
+
+  minios_list_add(&cur_thread->thread_list, &thread->join_list->thread_list);
+  local_irq_restore(flags);
   schedule();
-  
-  while ( scan_threads(thread) != 0)
-    schedule();
- 
-    /* printk("END JOIN\n"); */
   return 0;
 }
 
 
-struct minios_list_head list_threads;
 
 int pthread_mutex_lock(pthread_mutex_t *mutex){
  
@@ -157,7 +164,7 @@ int pthread_mutex_lock(pthread_mutex_t *mutex){
  thread = current;
    
  if(*mutex == NULL){
-   /* printk("Mutex Lock: thread %x\n",thread); */
+   /* printk("LOCK Mutex %x, thread: thread %x\n",*mutex,thread);   */
    *mutex = (struct pthread_mutex*)malloc(sizeof(struct pthread_mutex)); 
 
 
@@ -166,28 +173,31 @@ int pthread_mutex_lock(pthread_mutex_t *mutex){
    (*mutex)->m_blocked->flags = 0;
    (*mutex)->m_blocked->thread_list.next = &(*mutex)->m_blocked->thread_list;
    (*mutex)->m_blocked->thread_list.prev = &(*mutex)->m_blocked->thread_list;
+
+   /* printk("LOCK Mutex %x, thread: thread %x\n",*mutex,thread);   */
   }
 
  else {
-   /* printk("Called by: %x Already Acq by %x \n",thread,(*mutex)->m_owner); */
+   /* printk("LOCK Mutex %x, Called by: %x Already Acq by %x \n",*mutex, thread,(*mutex)->m_owner);    */
    if (thread != (*mutex)->m_owner){
-unsigned long flags;
-   local_irq_save(flags);
+     unsigned long flags;
+     local_irq_save(flags);
    
-   minios_list_del(&thread->thread_list);
-   clear_runnable(thread);
+     minios_list_del(&thread->thread_list);
+     clear_runnable(thread);
    
-   minios_list_add(&thread->thread_list, &(*mutex)->m_blocked->thread_list); 
-   local_irq_restore(flags);
+     minios_list_add(&thread->thread_list, &(*mutex)->m_blocked->thread_list); 
+     local_irq_restore(flags);
 
-   /* printk("lock %x\n",thread); */
-   block(thread);
+     /* printk("lock %x\n",thread); */
+
 
    }
-   schedule();
+   schedule(); 
    
-  }
-  return 0;
+ }
+
+ return 0;
 
 }
 
@@ -196,10 +206,14 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
   /* struct minios_list_head *it; */
   pthread_t thread,th;
   struct minios_list_head *it,*it_2;
-
   thread = current;
+  
 
-  /* printk("Unlock %x\n",thread); */
+  /* printk("UNLOCK Mutex %x, Called by: %x \n",*mutex,thread); */
+  if(*mutex == NULL) return 1;
+
+  /* printk("UNLOCK Mutex %x, Called by: %x Already Acq by %x \n",*mutex,thread,(*mutex)->m_owner);     */
+
 
   unsigned long flags;
   local_irq_save(flags);
@@ -210,17 +224,17 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
         th = minios_list_entry(it, struct thread, thread_list);
 
 	minios_list_del(&th->thread_list);
-	minios_list_add_tail(&th->thread_list, &idle_thread->thread_list);
+	minios_list_add(&th->thread_list, &idle_thread->thread_list);
 	set_runnable(th);
 
     }
    
-  
-  
-   
-
   local_irq_restore(flags);
-  schedule();
+  free(*mutex); 
+  *mutex = NULL; 
+  
+  schedule();  
+
   /*  pthread_t thread,wake_up; */
   /* thread = current; */
   /* struct minios_list_head *it, *n; */
@@ -235,7 +249,8 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
      
   /*   } */
  
- /* free(mutex); */
+  /* free(*mutex);  */
+
   return 0;
 }
 

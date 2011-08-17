@@ -20,6 +20,7 @@ struct thread
     thread_regs_t regs;
 #endif /* !defined(__ia64__) */
     struct minios_list_head thread_list;
+  struct thread* join_list;
     uint32_t flags;
     s_time_t wakeup_time;
 #ifdef HAVE_LIBC

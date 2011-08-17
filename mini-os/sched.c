@@ -143,7 +143,7 @@ void schedule(void)
     /* Interrupting the switch is equivalent to having the next thread
        inturrupted at the return instruction. And therefore at safe point. */
 
-     /* printk("$$$$$$$$ Switching $$$$$$$$\n %x:%s,%x%s\n",prev,prev->name,next,next->name);  */
+    /* printk("$$$$$$$$ Switching $$$$$$$$\n %x:%s,%x%s\n",prev,prev->name,next,next->name);   */
     if(prev != next) switch_threads(prev, next);
     /* printk("$$$$DONE SWI$$$\n"); */
  
@@ -186,7 +186,8 @@ struct thread* create_thread(char *name, void (*function)(void *), void *data)
     }
 
     local_irq_restore(flags);
-
+    
+    thread->join_list = NULL;
     return thread;
 }
 
@@ -230,8 +231,26 @@ void exit_thread(void)
 {
     unsigned long flags;
     struct thread *thread = current;
+    struct thread *th;
+    struct minios_list_head *it,*it_2;
+
     printk("Thread \"%s\" at %x exited.\n", thread->name, thread);
     local_irq_save(flags);
+
+    /* Wakeup threads which are waiting for join */
+    if (thread->join_list != NULL){
+
+      minios_list_for_each_safe(it,it_2, &thread->join_list->thread_list)
+      {
+        th = minios_list_entry(it, struct thread, thread_list);
+
+	minios_list_del(&th->thread_list);
+	minios_list_add_tail(&th->thread_list, &idle_thread->thread_list);
+	set_runnable(th);
+
+      }
+
+    }
     /* Remove from the thread list */
     minios_list_del(&thread->thread_list);
     clear_runnable(thread);
