@@ -5,12 +5,14 @@
 #include <pthread.h>
 #include <xmalloc.h>
 
+
+
 void my_main(void);
 void *f2(void *x);
 
 void  my_main(){
 
-
+  
    pthread_t f2_thread;//,f1_thread;
 
 
@@ -57,14 +59,17 @@ while (v < 20) {
  
 void *f2(void *unused)  
 {
-  int arg = 5;
+
+
   pthread_t producer_thread; 
   pthread_t consumer_thread; 
   sleep(2);
   printf("\n\n\n\n\n\n\n\n");
-
+  printf("********\n");
+  printf("Running Example pthread program \n");
+  printf("********\n");
   pthread_mutex_lock(&consume_mutex);
-    pthread_create(&consumer_thread,NULL,consumer,&arg);
+    pthread_create(&consumer_thread,NULL,consumer,NULL);
     pthread_create(&producer_thread,NULL,producer,NULL);
     pthread_join(consumer_thread,NULL);
     return NULL;
@@ -80,7 +85,7 @@ for (i=0;i<10;i++) {
    pthread_mutex_unlock(&produce_mutex);
    printf("got %d\n",v);
 }
- printf("Ended %d",*((int *)unused));
+
  return NULL;
 /* pthread_exit(NULL); */
 }

@@ -535,6 +535,7 @@ void start_kernel(start_info_t *si)
     /* Init the console driver. */
     init_console();
 
+
     /* Init grant tables */
     init_gnttab();
     
@@ -544,15 +545,15 @@ void start_kernel(start_info_t *si)
     /* Init XenBus */
     init_xenbus();
 
-    
+
     /* Call (possibly overridden) app_main() */
     
-    app_main(&start_info);
+    /* app_main(&start_info); */
 
     my_main();
-    
-    /* Everything initialised, start idle thread */
     run_idle_thread();
+    /* Everything initialised, start idle thread */
+
 }
 
 void stop_kernel(void)

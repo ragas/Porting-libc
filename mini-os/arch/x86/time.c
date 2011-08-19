@@ -216,8 +216,10 @@ void block_domain(s_time_t until)
  */
 static void timer_handler(evtchn_port_t ev, struct pt_regs *regs, void *ign)
 {
+
     get_time_values_from_xen();
     update_wallclock();
+
 }
 
 
